@@ -52,7 +52,7 @@ No terminal: `npx web-push generate-vapid-keys`. A pública vai para `vapidPubli
    - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (`mailto:hello@oasismind.app`)
    - Opcionais: `SITE_URL`, `AI_MODEL`, `AI_WEEKLY_MODEL`, `AI_DAILY_LIMIT` (padrão 40)
 3. **Settings → Domains**: `oasismind.app` e `www.oasismind.app`.
-4. Crons em `vercel.json`: lembretes de hora a hora (**precisa do plano Pro**; no plano grátis mude para uma vez por dia) e resumo semanal às segundas às 06:00 UTC.
+4. Crons em `vercel.json`: lembrete da manhã 1x por dia às 07:00 UTC (plano grátis) e resumo semanal às segundas às 06:00 UTC. No plano Pro, mude o lembrete para `0 * * * *` e defina `REMINDERS_HOURLY=1` para usar o horário de cada pessoa.
 
 ### 5. Webhook do checkout
 

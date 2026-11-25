@@ -1,5 +1,6 @@
 // Lembretes por push no horário escolhido por cada pessoa (manhã e noite, no fuso horário dela).
-// Executado de hora a hora pelo Cron da Vercel (cron de hora a hora exige o plano Pro da Vercel).
+// Plano grátis da Vercel: o cron roda 1x por dia (07:00 UTC) e envia o lembrete da manhã a quem ainda não fez o check-in.
+// Plano Pro: mude o cron em vercel.json para "0 * * * *" e defina REMINDERS_HOURLY=1 para respeitar o horário de cada pessoa.
 // Variáveis: CRON_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT
 import webpush from 'web-push';
 import { env, db, json } from './_lib.js';
@@ -29,7 +30,8 @@ export async function GET(req) {
     const am = Number((p.morning_time || '08:00').slice(0, 2));
     const pm = Number((p.evening_time || '21:00').slice(0, 2));
     let kind = null;
-    if (hora === am) kind = 'morning'; else if (hora === pm) kind = 'evening';
+    if (env('REMINDERS_HOURLY') !== '1') kind = 'morning';
+    else if (hora === am) kind = 'morning'; else if (hora === pm) kind = 'evening';
     if (!kind) continue;
     const feitos = await db(`entries?select=id&user_id=eq.${s.user_id}&local_date=eq.${data}&kind=eq.${kind}&limit=1`);
     if (feitos.length) continue;
