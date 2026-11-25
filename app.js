@@ -45,6 +45,7 @@ async function iniciarSupabase() {
   await carregarScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js');
   S.sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey, { auth: { persistSession: true, autoRefreshToken: true } });
   const { data } = await S.sb.auth.getSession();
+  if (/access_token|error_description/.test(location.hash)) history.replaceState(null, '', location.pathname + '#hoje');
   S.user = data.session ? { id: data.session.user.id, email: data.session.user.email } : null;
 }
 async function token() { const { data } = await S.sb.auth.getSession(); return data.session?.access_token; }
@@ -63,6 +64,17 @@ const Auth = {
     const { data, error } = await S.sb.auth.verifyOtp({ email, token: code, type: 'email' });
     if (error) throw new Error(t('err.code'));
     S.user = { id: data.user.id, email: data.user.email };
+  },
+  async entrarSenha(email, senha) {
+    if (DEMO) { S.user = { id: 'demo', email }; LS.set('oasis_demo_user', S.user); return; }
+    const { data, error } = await S.sb.auth.signInWithPassword({ email, password: senha });
+    if (error) throw new Error(t('err.password'));
+    S.user = { id: data.user.id, email: data.user.email };
+  },
+  async definirSenha(senha) {
+    if (DEMO) return;
+    const { error } = await S.sb.auth.updateUser({ password: senha });
+    if (error) throw new Error(/different/i.test(error.message) ? t('pw.same') : t('pw.fail'));
   },
   async sair() {
     if (!DEMO) await S.sb.auth.signOut();
@@ -206,53 +218,76 @@ function ligarMic(btn, campo) {
 }
 const micBtn = id => `<button type="button" class="mic" id="${id}" aria-pressed="false" aria-label="${esc(t('mic.label'))}">${ico('i-mic')}<span>${esc(t('mic.speak'))}</span></button>`;
 
-/* ---------- Login ---------- */
+/* ---------- Login (mesmo padrão do Inabaláveis: link/código por e-mail ou senha) ---------- */
 function telaLogin() {
-  let email = '';
-  const passo1 = () => {
-    view.innerHTML = `<div class="center">
-      <img class="logo" src="assets/logo.png" alt="Oasis Mind">
-      <h1>${esc(t('login.title'))}</h1>
-      <p class="muted">${esc(t('login.sub'))}</p>
-      <form id="f" class="field" novalidate>
-        <label class="label" for="email">${esc(t('login.email'))}</label>
-        <input class="input" id="email" type="email" autocomplete="email" inputmode="email" required value="${esc(email)}">
-        <div class="err" id="err"></div>
-        <button class="btn" id="b">${esc(t('login.send'))}</button>
-      </form>
-      ${DEMO ? `<p class="small muted">${esc(t('login.demo'))}</p>` : ''}
-    </div>`;
-    $('#f').onsubmit = async ev => {
-      ev.preventDefault();
-      email = $('#email').value.trim().toLowerCase();
-      if (!/^\S+@\S+\.\S+$/.test(email)) { $('#err').textContent = t('err.email'); return; }
-      $('#b').disabled = true; $('#b').textContent = t('login.sending');
-      try { await Auth.enviar(email); passo2(); } catch (e) { $('#err').textContent = t('err.generic'); $('#b').disabled = false; $('#b').textContent = t('login.send'); }
-    };
+  view.innerHTML = `<section class="login">
+    <div class="login-hero">
+      <img src="assets/logo.png" alt="Oasis Mind">
+      <p>${esc(t('app.tagline'))}</p>
+    </div>
+    <form class="card form" id="fEmail" novalidate>
+      <div class="field"><label class="label" for="email">${esc(t('login.emailLabel'))}</label>
+        <input class="input" id="email" type="email" inputmode="email" autocomplete="email" required placeholder="${esc(t('login.emailPh'))}"></div>
+      <div class="field" id="wrapSenha" hidden><label class="label" for="senha">${esc(t('login.password'))}</label>
+        <input class="input" id="senha" type="password" autocomplete="current-password"></div>
+      <div class="field" id="wrapCod" hidden><label class="label" for="codigo">${esc(t('login.codeLabel'))}</label>
+        <input class="input code-input" id="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]*"></div>
+      <div class="err" id="erro" role="alert"></div>
+      <button class="btn" id="bEntrar" type="submit">${esc(t('login.sendAccess'))}</button>
+      <button class="btn sec" id="bModo" type="button">${esc(t('login.withPassword'))}</button>
+    </form>
+    <p class="ajuda" id="ajuda">${esc(DEMO ? t('login.demo') : t('login.help2'))}</p>
+  </section>`;
+  let etapa = 1, modoSenha = false;
+  $('#bModo').onclick = () => {
+    modoSenha = !modoSenha; etapa = 1; $('#erro').textContent = '';
+    $('#wrapSenha').hidden = !modoSenha; $('#wrapCod').hidden = true; $('#email').readOnly = false;
+    $('#bEntrar').textContent = modoSenha ? t('login.signin') : t('login.sendAccess');
+    $('#bModo').textContent = modoSenha ? t('login.withoutPassword') : t('login.withPassword');
+    if (modoSenha) $('#senha').focus();
   };
-  const passo2 = () => {
-    view.innerHTML = `<div class="center">
-      <img class="logo" src="assets/logo.png" alt="Oasis Mind">
-      <h1>${esc(t('login.code'))}</h1>
-      <p class="muted">${esc(DEMO ? t('login.demo') : t('login.help', { email }))}</p>
-      <form id="f" class="field" novalidate>
-        <label class="sr" for="code">${esc(t('login.code'))}</label>
-        <input class="input code-input" id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required>
-        <div class="err" id="err"></div>
-        <button class="btn" id="b">${esc(t('login.verify'))}</button>
-      </form>
-      <button class="link-btn" id="trocar">${esc(t('login.change'))}</button>
-    </div>`;
-    $('#code').focus();
-    $('#trocar').onclick = passo1;
-    $('#f').onsubmit = async ev => {
-      ev.preventDefault();
-      $('#b').disabled = true;
-      try { await Auth.verificar(email, $('#code').value.trim()); S.loaded = false; render(); }
-      catch (e) { $('#err').textContent = e.message || t('err.code'); $('#b').disabled = false; }
-    };
-  };
-  passo1();
+  $('#fEmail').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const email = $('#email').value.trim().toLowerCase(), erro = $('#erro'), b = $('#bEntrar');
+    erro.textContent = '';
+    if (!/^\S+@\S+\.\S+$/.test(email)) { erro.textContent = t('err.email'); return; }
+    b.disabled = true;
+    try {
+      if (modoSenha) {
+        await Auth.entrarSenha(email, $('#senha').value);
+        S.loaded = false; return render();
+      } else if (etapa === 1) {
+        await Auth.enviar(email);
+        etapa = 2; $('#wrapCod').hidden = false; $('#email').readOnly = true; b.textContent = t('login.enterCode');
+        $('#ajuda').textContent = DEMO ? t('login.demo') : t('login.sentHelp');
+        $('#codigo').focus();
+      } else {
+        await Auth.verificar(email, $('#codigo').value.trim());
+        S.loaded = false; return render();
+      }
+    } catch (err) { erro.textContent = err.message || t('err.generic'); }
+    b.disabled = false;
+  });
+}
+
+function telaSenha() {
+  modal(`<form id="fSenha" novalidate style="display:flex;flex-direction:column;gap:14px"><h2>${esc(t('pw.title'))}</h2>
+    <p class="muted small">${esc(t('pw.sub'))}</p>
+    <div class="field"><label class="label" for="nova">${esc(t('pw.new'))}</label><input class="input" id="nova" type="password" autocomplete="new-password"></div>
+    <div class="field"><label class="label" for="nova2">${esc(t('pw.repeat'))}</label><input class="input" id="nova2" type="password" autocomplete="new-password"></div>
+    <div class="err" id="erroS" role="alert"></div>
+    <button class="btn" type="submit">${esc(t('pw.save'))}</button>
+    <button class="btn sec" type="button" id="bCanc">${esc(t('pw.cancel'))}</button></form>`);
+  $('#nova').focus();
+  $('#bCanc').onclick = fecharModal;
+  $('#fSenha').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const a = $('#nova').value, b = $('#nova2').value, er = $('#erroS');
+    if (a.length < 8) { er.textContent = t('pw.short'); return; }
+    if (a !== b) { er.textContent = t('pw.mismatch'); return; }
+    try { await Auth.definirSenha(a); fecharModal(); aviso(t('pw.saved')); }
+    catch (err) { er.textContent = err.message; }
+  });
 }
 
 function telaSemAcesso() {
@@ -262,7 +297,7 @@ function telaSemAcesso() {
     <p class="muted">${esc(t('noaccess.sub'))}</p>
     <a class="btn" href="${esc(CFG.checkout?.anual || CFG.paginaVendas)}">${esc(t('noaccess.buy'))}</a>
     <button class="btn sec" id="re">${esc(t('noaccess.retry'))}</button>
-    <button class="link-btn" id="sair">${esc(t('set.signout'))}</button>
+    <button class="btn sec" id="sair">${esc(t('noaccess.other'))}</button>
   </div>`;
   $('#re').onclick = () => { S.loaded = false; render(); };
   $('#sair').onclick = async () => { await Auth.sair(); render(); };
@@ -592,6 +627,7 @@ function telaAjustes() {
       <button class="btn small sec" id="push" style="align-self:flex-start;background:var(--bg)">${esc(t('set.enable'))}</button></div>
     <div class="card"><span class="label">${esc(t('set.aiTitle'))}</span><p class="small">${esc(t('set.aiText'))}</p><p class="small muted">${esc(t('set.disclaimer'))}</p></div>
     <div class="card"><span class="label">${esc(t('set.data'))}</span>
+      <button class="link-btn" id="pw" style="justify-content:flex-start">${esc(t('set.password'))}</button>
       <button class="link-btn" id="exp" style="justify-content:flex-start">${esc(t('set.export'))}</button>
       <button class="link-btn" id="del" style="justify-content:flex-start;color:#B42318">${esc(t('set.delete'))}</button></div>
     <div class="card"><span class="label">${esc(t('set.support'))}</span><a href="mailto:${esc(CFG.suporteEmail)}">${esc(CFG.suporteEmail)}</a>
@@ -602,6 +638,7 @@ function telaAjustes() {
     catch (e) { aviso(t('err.generic')); }
   };
   $('#push').onclick = ativarPush;
+  $('#pw').onclick = telaSenha;
   $('#inst').onclick = instrucoesInstalar;
   $('#exp').onclick = async () => {
     const dados = await Db.exportar();
