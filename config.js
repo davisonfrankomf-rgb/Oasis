@@ -2,11 +2,11 @@
 // Deixe supabaseUrl vazio para rodar em MODO DEMONSTRAÇÃO (tudo salvo só no aparelho, respostas da IA simuladas).
 window.APP_CONFIG = {
   nome: 'Oasis Mind',
-  dominio: 'oasismind.app',
+  dominio: 'oasismind.vercel.app',
 
   // Supabase (Settings > API). Nunca coloque aqui a service_role key.
-  supabaseUrl: '',
-  supabaseAnonKey: '',
+  supabaseUrl: 'https://cqbwfzzsnqwpzhkjiewg.supabase.co',
+  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxYndmenpzbnF3cHpoa2ppZXdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU2MzI2NDcsImV4cCI6MjExMTIwODY0N30.qoV1YbB5BE0AGAWPSroQ0H3rvWOj-1KAoZfB5FrrkMU',
 
   // Notificações push (gere com: npx web-push generate-vapid-keys)
   vapidPublicKey: '',
