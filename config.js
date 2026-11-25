@@ -9,7 +9,7 @@ window.APP_CONFIG = {
   supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxYndmenpzbnF3cHpoa2ppZXdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU2MzI2NDcsImV4cCI6MjExMTIwODY0N30.qoV1YbB5BE0AGAWPSroQ0H3rvWOj-1KAoZfB5FrrkMU',
 
   // Notificações push (gere com: npx web-push generate-vapid-keys)
-  vapidPublicKey: '',
+  vapidPublicKey: 'BD2J98SkD46TYbep5zwVvaFYFG1-YqP3lDyFpy4t25wTvltdG8WOSNs_RufEMS_fHUXqJlbTKsgf6CSZtyRRJ4I',
 
   // Página de vendas / checkout para quem ainda não tem acesso
   checkout: {
