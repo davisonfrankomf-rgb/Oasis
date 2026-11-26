@@ -3,7 +3,7 @@
 Web app instalável (PWA) para iPhone, Android e desktop. App em **oasismind.app**; página de vendas em **oasismind.com** (a fazer).
 Mesma estrutura do Inabaláveis: HTML/CSS/JS sem build + funções da Vercel em `/api` + Supabase.
 
-O app já funciona em **modo demonstração**: deixe `supabaseUrl` vazio em `config.js`. Nesse modo tudo fica salvo só no aparelho e as respostas da IA são simuladas (código de login: `123456`).
+O app já funciona em **modo demonstração**: deixe `supabaseUrl` vazio em `config.js`. Nesse modo tudo fica salvo só no aparelho (código de login: `123456`).
 
 ## O que está no app
 
