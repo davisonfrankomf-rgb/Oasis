@@ -1,27 +1,35 @@
 // Conteúdo fixo do app: perguntas guiadas, dicas científicas e linhas de apoio por país.
 // IMPORTANTE: confirme todos os números de apoio antes do lançamento (eles mudam com o tempo).
 window.OASIS_DATA = {
-  // Perguntas da manhã (uma por dia, em rotação)
-  morningPrompts: [
+  // Perguntas para começar a escrever (uma por dia, em rotação; a pessoa pode trocar)
+  journalPrompts: [
     'What\'s taking up the most space in your head right now?',
-    'What would make today feel like a good day, even a small one?',
-    'What are you carrying into today that isn\'t yours to carry?',
-    'If your body could talk this morning, what would it say?',
+    'What are you worried about? Write all of it, even the small things.',
+    'What do you need to do — and what can wait?',
+    'What happened today that you keep thinking about?',
+    'What are you carrying that isn\'t yours to carry?',
+    'If your body could talk right now, what would it say?',
     'What is one thing you are avoiding — and why?',
-    'What do you need more of today: rest, focus or connection?',
-    'Which thought keeps coming back? Write it down as it is.'
+    'What went well today, even something small?',
+    'What would make tomorrow a little easier?',
+    'Which thought keeps coming back? Write it down as it is.',
+    'What do you need more of: rest, focus or connection?',
+    'What are three things you\'re grateful for today?'
   ],
 
-  // Dicas curtas, com base em psicologia e neurociência, mostradas depois da resposta da IA
+  // Base científica, mostrada no app (sem promessas clínicas)
   tips: [
+    'Writing about stressful thoughts for a few minutes a day (expressive writing) is linked to less rumination and lower stress over time.',
     'Putting a feeling into words (affect labeling) is linked to lower activity in the brain\'s alarm system.',
-    'Writing about stressful thoughts for a few minutes (expressive writing) can reduce rumination over time.',
-    'A concrete "when–then" plan (implementation intention) makes you much more likely to follow through.',
+    'Writing down your open tasks before a break or bedtime frees working memory and can help you switch off.',
     'Noticing three good things from your day is one of the most studied ways to lift mood.',
     'A long, slow exhale activates the body\'s calming response within a few breaths.',
-    'Treating yourself as you would treat a friend (self-compassion) is linked to more resilience, not less drive.',
-    'Asking "what is the evidence for this thought?" is a core tool of cognitive behavioural therapy.'
+    'Working on one task at a time, in a fixed block, reduces the mental cost of constant switching.',
+    'Regular short breaks between focused blocks help protect energy and lower the risk of burnout.'
   ],
+
+  // Palavras ignoradas na nuvem "What's been on your mind"
+  stopwords: 'a about after again all also am an and any are as at be because been before being but by can could did do does doing done dont down each even feel felt for from get go going got had has have having he her here him his how i if im in into is it its ive just know like make me more most much my need not now of off on one only or other our out over really so some still than that the their them then there these they thing things think this those to today too up us very was we well were what when which while who why will with would you your yeah ok okay maybe something'.split(' '),
 
   // Linhas de apoio. emergency = número de emergência; lines = apoio emocional / crise.
   // Fonte geral para conferir: https://findahelpline.com

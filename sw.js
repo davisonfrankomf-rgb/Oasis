@@ -1,5 +1,5 @@
 // Service worker do Oasis Mind: funciona offline e recebe notificações push.
-const CACHE = 'oasis-v2';
+const CACHE = 'oasis-v3';
 const SHELL = ['/', '/index.html', '/styles.css', '/app.js', '/i18n.js', '/data.js', '/config.js',
   '/manifest.webmanifest', '/assets/logo.png', '/assets/symbol.png', '/assets/icon-192.png', '/assets/icon-512.png', '/assets/apple-touch-icon.png'];
 
@@ -33,7 +33,7 @@ self.addEventListener('push', e => {
     icon: '/assets/icon-192.png',
     badge: '/assets/icon-192.png',
     data: { url: d.url || '/#hoje' },
-    tag: 'oasis-reminder'
+    tag: d.tag || 'oasis-reminder'
   }));
 });
 
